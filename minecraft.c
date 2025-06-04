@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -10,6 +11,7 @@ void restore_terminal();
 void handle_input();
 
 static struct termios org_term_state, new_term_state;
+static char key_state[256] = {};
 
 void init_terminal()
 {
@@ -27,17 +29,30 @@ void restore_terminal()
     printf("Terminal restored\n");
 }
 
-void handle_input() {}
+void handle_input()
+{
+    char c;
+    while (read(STDIN_FILENO, &c, 1) > 0)
+    {
+        // Exit program on user quit
+        if (c == 'q')
+        {
+            exit(0);
+        }
+
+        printf("You pressed: %c\n", c);
+    }
+}
 
 int main()
 {
     init_terminal();
 
     // Game Loop
-    // while (1)
-    // {
-    //     handle_input();
-    // }
+    while (1)
+    {
+        handle_input();
+    }
 
     restore_terminal();
     return 0;
