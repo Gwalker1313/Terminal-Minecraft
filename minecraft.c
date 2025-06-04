@@ -37,6 +37,7 @@ void handle_input()
         // Exit program on user quit
         if (c == 'q')
         {
+            restore_terminal();
             exit(0);
         }
 
