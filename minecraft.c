@@ -67,9 +67,8 @@ void handle_input()
 
     while (read(STDIN_FILENO, &c, 1) > 0)
     {
-        printf("You pressed: %c\n", c);
-        unsigned char uc = (unsigned char)c;
-        key_state[uc] = 1;
+        // printf("You pressed: %c\n", c);
+        key_state[(unsigned char)c] = 1;
     }
 }
 
@@ -153,9 +152,9 @@ char** get_picture(char** picture, player_pos_view player, char*** blocks)
 void draw_ASCII(char** picture)
 {
     fflush(stdout);
-    for (int i = 0; i < X_PIXELS; i++)
+    for (int i = 0; i < Y_PIXELS; i++)
     {
-        for (int j = 0; j < Y_PIXELS; j++)
+        for (int j = 0; j < X_PIXELS; j++)
         {
             printf("%c", picture[i][j]);
         }
@@ -174,7 +173,7 @@ int main()
     {
         for (int j = 0; j < Y_BLOCKS; j++)
         {
-            for (int k = 0; k < Z_BLOCKS; k++)
+            for (int k = 0; k < 4; k++)
             {
                 blocks[k][j][i] = '@';
             }
