@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,9 @@
 #define X_BLOCKS 20
 #define Y_BLOCKS 20
 #define Z_BLOCKS 10
+
+#define VIEW_HEIGHT 0.5
+#define VIEW_WIDTH 0.5
 
 typedef struct Vector1
 {
@@ -116,8 +120,46 @@ player_pos_view init_posview()
     return player;
 }
 
+vect1 angles_to_vector(vect2 angles)
+{
+    vect1 res;
+    res.x = (angles.theta) * cos(angles.phi);
+    res.y = (angles.theta) * sin(angles.phi);
+    res.z = sin(angles.theta);
+    return res;
+}
+
+vect1 vect_add(vect1 v1, vect1 v2)
+{
+    vect1 res = {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
+    return res;
+}
+
+vect1 vect_sub(vect1 v1, vect1 v2)
+{
+    vect1 res = {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z};
+    return res;
+}
+
+vect1 vect_scale(float s, vect1 v)
+{
+    vect1 res = {s * v.x, s * v.y, s * v.z};
+    return res;
+}
+
 vect1** init_directions(vect2 view)
 {
+    view.theta -= VIEW_HEIGHT / 2.0;
+    vect1 screen_down = angles_to_vector(view);
+    view.theta += VIEW_HEIGHT;
+    vect1 screen_up = angles_to_vector(view);
+    view.theta == VIEW_HEIGHT / 2.0;
+    view.phi -= VIEW_WIDTH / 2.0;
+    vect1 screen_left = angles_to_vector(view);
+    view.phi += VIEW_WIDTH;
+    vect1 screen_right = angles_to_vector(view);
+    view.phi += VIEW_WIDTH / 2.0;
+
     vect1** dir = malloc(sizeof(vect1*) * Y_PIXELS);
     for (int i = 0; i < Y_PIXELS; i++)
     {
