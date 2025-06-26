@@ -147,18 +147,32 @@ vect1 vect_scale(float s, vect1 v)
     return res;
 }
 
+void vect_normalize(vect1* v)
+{
+    float length = sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+    v->x /= length;
+    v->y /= length;
+    v->z /= length;
+}
+
 vect1** init_directions(vect2 view)
 {
     view.theta -= VIEW_HEIGHT / 2.0;
     vect1 screen_down = angles_to_vector(view);
     view.theta += VIEW_HEIGHT;
     vect1 screen_up = angles_to_vector(view);
-    view.theta == VIEW_HEIGHT / 2.0;
+    view.theta -= VIEW_HEIGHT / 2.0;
     view.phi -= VIEW_WIDTH / 2.0;
     vect1 screen_left = angles_to_vector(view);
     view.phi += VIEW_WIDTH;
     vect1 screen_right = angles_to_vector(view);
     view.phi += VIEW_WIDTH / 2.0;
+
+    vect1 screen_center_vert = vect_scale(0.5, vect_add(screen_up, screen_down));
+    vect1 screen_center_hori = vect_scale(0.5, vect_add(screen_left, screen_right));
+
+    vect1 center_to_left = vect_sub(screen_left, screen_center_hori);
+    vect1 center_to_up = vect_sub(screen_up, screen_center_vert);
 
     vect1** dir = malloc(sizeof(vect1*) * Y_PIXELS);
     for (int i = 0; i < Y_PIXELS; i++)
@@ -169,7 +183,10 @@ vect1** init_directions(vect2 view)
     {
         for (int x = 0; x < X_PIXELS; x++)
         {
-            vect1 temp;
+            vect1 temp = vect_add(vect_add(screen_center_hori, center_to_left), center_to_up);
+            temp = vect_sub(temp, vect_scale(((float)x / (X_PIXELS - 1)) * 2, center_to_left));
+            temp = vect_sub(temp, vect_scale(((float)y / (Y_PIXELS - 1)) * 2, center_to_up));
+            vect_normalize(&temp);
             dir[y][x] = temp;
         }
     }
