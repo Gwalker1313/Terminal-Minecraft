@@ -12,21 +12,22 @@
 #define X_BLOCKS 20
 #define Y_BLOCKS 20
 #define Z_BLOCKS 10
+#define BLOCK_BORDER_SIZE 0.05
 
 #define VIEW_HEIGHT 0.5
 #define VIEW_WIDTH 0.5
 
 typedef struct Vector1
 {
-    int x;
-    int y;
-    int z;
+    float x;
+    float y;
+    float z;
 } vect1;
 
 typedef struct Vector2
 {
-    int theta;
-    int phi;
+    float theta;
+    float phi;
 } vect2;
 
 typedef struct Vector_Vector2
@@ -115,16 +116,16 @@ player_pos_view init_posview()
     player.pos.x = 5;
     player.pos.y = 5;
     player.pos.z = 5;
-    player.view.theta = 0;
     player.view.phi = 0;
+    player.view.theta = 0;
     return player;
 }
 
 vect1 angles_to_vector(vect2 angles)
 {
     vect1 res;
-    res.x = (angles.theta) * cos(angles.phi);
-    res.y = (angles.theta) * sin(angles.phi);
+    res.x = cos(angles.theta) * cos(angles.phi);
+    res.y = cos(angles.theta) * sin(angles.phi);
     res.z = sin(angles.theta);
     return res;
 }
@@ -166,7 +167,7 @@ vect1** init_directions(vect2 view)
     vect1 screen_left = angles_to_vector(view);
     view.phi += VIEW_WIDTH;
     vect1 screen_right = angles_to_vector(view);
-    view.phi += VIEW_WIDTH / 2.0;
+    view.phi -= VIEW_WIDTH / 2.0;
 
     vect1 screen_center_vert = vect_scale(0.5, vect_add(screen_up, screen_down));
     vect1 screen_center_hori = vect_scale(0.5, vect_add(screen_left, screen_right));
@@ -194,9 +195,94 @@ vect1** init_directions(vect2 view)
     return dir;
 }
 
-char raytrace(vect1 pos, vect1 dir, char*** blocks) { return 'b'; }
+float min(float a, float b)
+{
+    if (a < b)
+    {
+        return a;
+    }
+    return b;
+}
 
-char** get_picture(char** picture, player_pos_view player, char*** blocks)
+int on_block_border(vect1 pos)
+{
+    int cnt = 0;
+    if (fabsf(pos.x - roundf(pos.x)) < BLOCK_BORDER_SIZE)
+    {
+        cnt++;
+    }
+    if (fabsf(pos.y - roundf(pos.y)) < BLOCK_BORDER_SIZE)
+    {
+        cnt++;
+    }
+    if (fabsf(pos.z - roundf(pos.z)) < BLOCK_BORDER_SIZE)
+    {
+        cnt++;
+    }
+    if (cnt >= 2)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int ray_outside(vect1 pos)
+{
+    if (pos.x >= X_BLOCKS || pos.y >= Y_BLOCKS || pos.z >= Z_BLOCKS || pos.x < 0 || pos.y < 0 || pos.z < 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+char raytrace(vect1 pos, vect1 dir, char*** blocks)
+{
+    float eps = 0.02;
+    while (!ray_outside(pos))
+    {
+        char c = blocks[(int)pos.z][(int)pos.y][(int)pos.x];
+        if (c != ' ')
+        {
+            if (on_block_border(pos))
+            {
+                return '.';
+            }
+            else
+            {
+                return c;
+            }
+        }
+        float dist = 2;
+        if (dir.x > eps)
+        {
+            dist = min(dist, ((int)(pos.x + 1) - pos.x) / dir.x);
+        }
+        else if (dir.x < -eps)
+        {
+            dist = min(dist, ((int)pos.x - pos.x) / dir.x);
+        }
+        if (dir.y > eps)
+        {
+            dist = min(dist, ((int)(pos.y + 1) - pos.y) / dir.y);
+        }
+        else if (dir.y < -eps)
+        {
+            dist = min(dist, ((int)pos.y - pos.y) / dir.y);
+        }
+        if (dir.z > eps)
+        {
+            dist = min(dist, ((int)(pos.z + 1) - pos.z) / dir.z);
+        }
+        else if (dir.z < -eps)
+        {
+            dist = min(dist, ((int)pos.z - pos.z) / dir.z);
+        }
+        pos = vect_add(pos, vect_scale(dist + eps, dir));
+    }
+    return ' ';
+}
+
+void get_picture(char** picture, player_pos_view player, char*** blocks)
 {
     vect1** directions = init_directions(player.view);
     for (int y = 0; y < Y_PIXELS; y++)
@@ -244,8 +330,6 @@ int main()
     while (1)
     {
         handle_input();
-        // printf("WE'RE FREE!\n");
-        usleep(20000);
         if (key_pressed('q'))
         {
             restore_terminal();
@@ -257,6 +341,7 @@ int main()
 
         // Draw ASCII
         draw_ASCII(picture);
+        usleep(20000);
     }
 
     restore_terminal();
