@@ -6,16 +6,18 @@
 #include <termios.h>
 #include <unistd.h>
 
-#define X_PIXELS 400
-#define Y_PIXELS 200
+#define X_PIXELS 900
+#define Y_PIXELS 180
 
 #define X_BLOCKS 20
 #define Y_BLOCKS 20
 #define Z_BLOCKS 10
-#define BLOCK_BORDER_SIZE 0.05
+#define BLOCK_BORDER_SIZE 0.025
 
-#define VIEW_HEIGHT 0.5
-#define VIEW_WIDTH 0.5
+#define VIEW_HEIGHT 0.7
+#define VIEW_WIDTH 1
+
+#define EYES_HEIGHT 1.5
 
 typedef struct Vector1
 {
@@ -115,7 +117,7 @@ player_pos_view init_posview()
     player_pos_view player;
     player.pos.x = 5;
     player.pos.y = 5;
-    player.pos.z = 5;
+    player.pos.z = 4 + EYES_HEIGHT;
     player.view.phi = 0;
     player.view.theta = 0;
     return player;
@@ -245,7 +247,7 @@ char raytrace(vect1 pos, vect1 dir, char*** blocks)
         {
             if (on_block_border(pos))
             {
-                return '.';
+                return '-';
             }
             else
             {
@@ -297,12 +299,15 @@ void get_picture(char** picture, player_pos_view player, char*** blocks)
 void draw_ASCII(char** picture)
 {
     fflush(stdout);
+    // printf("\033[0;0H");        // Clear the screen by resetting the cursor.
+    printf("\033[2j\033[0;0H"); // Clear the screen by resetting the cursor.
     for (int i = 0; i < Y_PIXELS; i++)
     {
         for (int j = 0; j < X_PIXELS; j++)
         {
             printf("%c", picture[i][j]);
         }
+        // printf("\033[0m\n");
         printf("\n");
     }
     return;
@@ -311,6 +316,7 @@ void draw_ASCII(char** picture)
 int main()
 {
     init_terminal();
+    printf("\033[32m"); // Set terminal output color to green via ANSI escape code.
     char** picture = init_picture();
     char*** blocks = init_blocks();
 
