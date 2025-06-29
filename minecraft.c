@@ -323,10 +323,33 @@ void draw_ASCII(char** picture)
     return;
 }
 
+void update_player(player_pos_view* player, char*** blocks)
+{
+    float movement_eps = 0.30;
+    float tilt_eps = 0.1;
+    if (key_pressed('w'))
+    {
+        player->view.theta += tilt_eps;
+    }
+    if (key_pressed('a'))
+    {
+        player->view.phi -= tilt_eps;
+    }
+    if (key_pressed('s'))
+    {
+        player->view.theta -= tilt_eps;
+    }
+    if (key_pressed('d'))
+    {
+        player->view.phi += tilt_eps;
+    }
+}
+
 int main()
 {
     init_terminal();
-    printf("\033[32m\033[40m"); // Set terminal output color to green via ANSI escape code.
+    // Green - 32m, Cyan - 36m, Red - 31m, Blue - 34m, Yellow - 33m, White - 37m
+    printf("\033[36m\033[40m"); // Set terminal output color to green via ANSI escape code.
     char** picture = init_picture();
     char*** blocks = init_blocks();
 
@@ -351,6 +374,7 @@ int main()
             restore_terminal();
             exit(0);
         }
+        update_player(&player, blocks);
 
         // Get picture
         get_picture(picture, player, blocks);
