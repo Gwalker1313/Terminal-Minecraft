@@ -376,11 +376,11 @@ int main()
     char** picture = init_picture();
     char*** blocks = init_blocks();
 
-    for (int i = 0; i < X_BLOCKS; i++)
+    for (int k = 0; k < 4; k++)
     {
         for (int j = 0; j < Y_BLOCKS; j++)
         {
-            for (int k = 0; k < 4; k++)
+            for (int i = 0; i < X_BLOCKS; i++)
             {
                 blocks[k][j][i] = '@';
             }
