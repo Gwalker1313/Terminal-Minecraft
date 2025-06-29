@@ -327,6 +327,7 @@ void update_player(player_pos_view* player, char*** blocks)
 {
     float movement_eps = 0.30;
     float tilt_eps = 0.1;
+    // Update player orientation.
     if (key_pressed('w'))
     {
         player->view.theta += tilt_eps;
@@ -342,6 +343,28 @@ void update_player(player_pos_view* player, char*** blocks)
     if (key_pressed('d'))
     {
         player->view.phi += tilt_eps;
+    }
+    // Update player position.
+    vect1 dir = angles_to_vector(player->view);
+    if (key_pressed('i'))
+    {
+        player->pos.x += movement_eps * dir.x;
+        player->pos.y += movement_eps * dir.y;
+    }
+    if (key_pressed('j'))
+    {
+        player->pos.x += movement_eps * dir.y;
+        player->pos.y -= movement_eps * dir.x;
+    }
+    if (key_pressed('k'))
+    {
+        player->pos.x -= movement_eps * dir.x;
+        player->pos.y -= movement_eps * dir.y;
+    }
+    if (key_pressed('l'))
+    {
+        player->pos.x -= movement_eps * dir.y;
+        player->pos.y += movement_eps * dir.x;
     }
 }
 
