@@ -158,6 +158,9 @@ void vect_normalize(vect1* v)
     v->z /= length;
 }
 
+/// @brief Initializes directional vectors for each pixel on the screen from the player's view.
+/// @param view The player's view position and orientation in spherical coordinates.
+/// @return A pointer to a 2D array of directional vectors for each pixel on the screen.
 vect1** init_directions(vect2 view)
 {
     view.theta -= VIEW_HEIGHT / 2.0;
@@ -206,28 +209,34 @@ float min(float a, float b)
     return b;
 }
 
+/// @brief Checks if a given point is along any two given axises (voxel face) within a given threshold (the border size).
+/// @param pos A point in 3D space stored as a vector struct.
+/// @return True if the given point is on the border of a voxel face, false otherwise.
 int on_block_border(vect1 pos)
 {
-    int cnt = 0;
+    int aligned_axises = 0;
     if (fabsf(pos.x - roundf(pos.x)) < BLOCK_BORDER_SIZE)
     {
-        cnt++;
+        aligned_axises++;
     }
     if (fabsf(pos.y - roundf(pos.y)) < BLOCK_BORDER_SIZE)
     {
-        cnt++;
+        aligned_axises++;
     }
     if (fabsf(pos.z - roundf(pos.z)) < BLOCK_BORDER_SIZE)
     {
-        cnt++;
+        aligned_axises++;
     }
-    if (cnt >= 2)
+    if (aligned_axises >= 2)
     {
         return 1;
     }
     return 0;
 }
 
+/// @brief Checks if a given point is outside the bounds of the 3D grid world.
+/// @param pos A point in 3D space stored as a vector struct.
+/// @return True if the given point is out-of-bounds, false otherwise.
 int ray_outside(vect1 pos)
 {
     if (pos.x >= X_BLOCKS || pos.y >= Y_BLOCKS || pos.z >= Z_BLOCKS || pos.x < 0 || pos.y < 0 || pos.z < 0)
@@ -239,7 +248,7 @@ int ray_outside(vect1 pos)
 
 char raytrace(vect1 pos, vect1 dir, char*** blocks)
 {
-    float eps = 0.02;
+    float eps = 0.02; // Mantissa buffer to avoid floating point edge cases.
     while (!ray_outside(pos))
     {
         char c = blocks[(int)pos.z][(int)pos.y][(int)pos.x];
@@ -254,6 +263,7 @@ char raytrace(vect1 pos, vect1 dir, char*** blocks)
                 return c;
             }
         }
+        // Step along each axis using the smallest distance to ensure hitting the nearest axis.
         float dist = 2;
         if (dir.x > eps)
         {
@@ -316,7 +326,7 @@ void draw_ASCII(char** picture)
 int main()
 {
     init_terminal();
-    printf("\033[32m"); // Set terminal output color to green via ANSI escape code.
+    printf("\033[32m\033[40m"); // Set terminal output color to green via ANSI escape code.
     char** picture = init_picture();
     char*** blocks = init_blocks();
 
