@@ -407,6 +407,23 @@ int main()
         usleep(20000);
     }
 
+    // Free allocated memory
+    for (int i = 0; i < Y_PIXELS; i++)
+    {
+        free(picture[i]);
+    }
+    free(picture);
+
+    for (int i = 0; i < Z_BLOCKS; i++)
+    {
+        for (int j = 0; j < Y_BLOCKS; j++)
+        {
+            free(blocks[i][j]);
+        }
+        free(blocks[i]);
+    }
+    free(blocks);
+
     restore_terminal();
     return 0;
 }
